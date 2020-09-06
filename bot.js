@@ -8,8 +8,8 @@ const VkBot  = require('node-vk-bot-api')
 
 //const app = express() // CallBack
 const bot = new VkBot({
-  //confirmation: '',
-  token: '3480783c56f812b7e0d72893917b88c79d610a774b8b763f83de7862eefd6461e4d7a06254d630f366983',
+  //confirmation: '82d40e3b',
+  token: '929f8806197cf08acc483bd8e241f9e6ee54ebd6d8606722596512e9587a7f7055ba159e2efb4189514e6',
 })
 
 //api version 5.120
@@ -28,6 +28,8 @@ var Mess = [
   }
 ]
 
+const defaultPhoto = 'photo206382598_457251185_7e87d0de96d96ccf8f'
+
 //#################################################################################################//
 //#################################################################################################//
 //####################################      ОПИСАНИЕ СЦЕН      ####################################//
@@ -44,7 +46,6 @@ async (ctx) => {
     ctx.scene.next()
     await showPost(ctx, 0)
     await printMenu(ctx)
-  
   },
   async (ctx) => {
     // Сцена 1
@@ -84,7 +85,6 @@ async (ctx) => {
         else
           await ctx.reply('Не понимаю о чем это ты😅')
       }
-
     },
     //:::: МЕНЮ АДМИНА :::://
     async (ctx) => {
@@ -195,12 +195,14 @@ async (ctx) => {
       // Сцена 5
       // Изменение раздела
       if(ctx.message.text != '/cancel'){
-        if(ctx.message.text >= 0 && ctx.message.text < Mess.length){
+        if(ctx.message.text >= 0 && ctx.message.text < Mess.length && ctx.message.text != ''){
           await ctx.reply('Сейчас этот раздел выглядит так:')
           await showPost(ctx, ctx.message.text)
           await ctx.reply(
-            'Оформи в следующем сообщении его так, как нужно и отправь мне '+
-            'или напиши /done если не хочешь ничего не менять или закончил оформление',
+            'Оформи в следующих сообщениях его так, как нужно и отправь мне '+
+            'или напиши /done если не хочешь ничего не менять или закончил оформление\n\n'+
+            'Допустимые виды вложений:\n📌изображения,\n📌видео,\n📌аудио,\n📌длинные посты(только текстовая ссылка📜),\n'+
+            '📌записи со стен сообщества(только текстовая ссылка📜),\n📌прочие ссылки(только текстовая ссылка📜)',
             null,
             Markup.keyboard([Markup.button('/done','positive')])
           )
@@ -231,12 +233,7 @@ async (ctx) => {
           ctx.session.postId,
           ctx.message.text,
           ctx.message.attachments.map(e => {
-            switch(e.type){
-              case 'photo':
-                return `${e.type}${e.photo.owner_id}_${e.photo.id}_${e.photo.access_key}`
-              case 'video':
-                return `${e.type}${e.video.owner_id}_${e.video.id}_${e.video.access_key}`
-            }
+            return `${e.type}${e[e.type].owner_id}_${e[e.type].id}_${e[e.type].access_key}`
           })
         )
         }
@@ -287,8 +284,9 @@ async function editPost(postId,text,attachments){
   await Mess[postId].posts.push(
     {
       text: text,
-      attachments: attachments
+      attachments: attachments.map(value => {return value})
     })
+    
 }
 
 async function mixPost(positions){
@@ -300,10 +298,15 @@ async function mixPost(positions){
 }
 
 async function showPost(ctx, postId){
+  if(postId >= Mess.length || postId < 0)
+    ctx.reply(
+      'Такого блока не существует',
+      defaultPhoto
+    )
   if(Mess[postId].posts.length == 0){
     await ctx.reply(
       'Этот блок еще не готов',
-      'photo206382598_457249264_e9aaa35afe8822e9bf')
+      defaultPhoto)
     }
   else
     for (e of Mess[postId].posts){
@@ -325,7 +328,7 @@ async function printMenu(ctx){
       Markup.keyboard([Markup.button('Показать меню','primary')])
     )
   else
-    await ctx.reply('Меню еще не готово :(')
+    await ctx.reply('Меню еще не готово :(', defaultPhoto)
 }
 
 async function printAdminMenu(ctx){
@@ -362,6 +365,7 @@ bot.on(async (ctx) => {
 //#####################################      ЗАПУСК БОТА      #####################################//
 //#################################################################################################//
 //#################################################################################################//
+
 
 /*
 //CallBack
