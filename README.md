@@ -1,1 +1,1 @@
-Чат-бот для BSTU GameChampionship VK Js
+Чат-бот VK Js
